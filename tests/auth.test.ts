@@ -1,31 +1,36 @@
 
 import { registerUser } from "../src/application/registerUser";
-import { BCryptEncryption } from "../src/infrastructure/bCryptEncryption";
+import { HashPassword } from "../src/domain/user/hashPassword";
+import { Users } from "../src/domain/user/users";
+import { BCryptHash } from "../src/infrastructure/bCryptHash";
 import { DEFAULT_ADMIN_EMAIL } from "../src/infrastructure/constant";
 import { InMemoryUserRepository } from "../src/infrastructure/inMemoryUserRepository";
 
-const register = registerUser(InMemoryUserRepository, BCryptEncryption);
-const newUser : RegisterUserDto = {
-  email: "nguyen.ifzas@gmail.com",
-  password: "password",
-}
+const users : Users = InMemoryUserRepository;
+const hashService: HashPassword = BCryptHash;
+
 describe('User register', () => {
-
-    const register = registerUser(InMemoryUserRepository, BCryptEncryption);
-
-    let registeredUser: User;
-    const newUser = User.new("nguyen.ifzas@gmail.com", "password");
+    const register = registerUser(users, hashService);
+    const newUser : RegisterUserDto = {
+        email: "nguyen.ifzas@gmail.com",
+        password: "password",
+      }
     beforeAll(async() => {
-        registeredUser = await authenticationService.register(newUser.email, newUser.password);
+       
+        register(newUser);
     });
 
     it('Should hash the new user password', async () => {
-        const hashPassword = await encryptPassword.hash(newUser.password);
-        expect(newUser.password).not.toEqual(hashPassword);
+        const registeredUser = await users.find(newUser.email);
+ 
+        expect(registeredUser?.password).not.toEqual(newUser.password);
     });
 
     it('Should match new user plain and hashed password', async () => {
-        const comparePassword = await encryptPassword.compare(newUser.password, registeredUser.password);
+        const registeredUser = await users.find(newUser.email);
+
+        const comparePassword = await hashService.compare(newUser.password, registeredUser.password ?? "");
+
         expect(comparePassword).toBe(true);
     });
 

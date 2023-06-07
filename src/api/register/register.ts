@@ -1,9 +1,11 @@
 import { Handler, HandlerContext, HandlerEvent } from '@netlify/functions'
 import { registerUser } from '../../application/registerUser';
 import { InMemoryUserRepository } from '../../infrastructure/inMemoryUserRepository';
-import { BCryptEncryption } from '../../infrastructure/bCryptEncryption';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import { ErrorResponse, Response, response } from '../response';
+import { HashPassword } from '../../domain/user/hashPassword';
+import { Users } from '../../domain/user/users';
+import { BCryptHash } from '../../infrastructure/bCryptHash';
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   if (!event.body) {
@@ -19,7 +21,10 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
   const body = JSON.parse(event.body);
 
-  const register = registerUser(InMemoryUserRepository, BCryptEncryption);
+  const users : Users = InMemoryUserRepository;
+  const hashService: HashPassword = BCryptHash;
+  
+  const register = registerUser(users, hashService);
   const newUser : RegisterUserDto = {
     email: body.email,
     password: body.password,
