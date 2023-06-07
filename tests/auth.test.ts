@@ -40,7 +40,6 @@ describe('User register', () => {
         .rejects
         .toThrow(`User ${newUser.email} already exists`);
     });
-
 });
 
 
