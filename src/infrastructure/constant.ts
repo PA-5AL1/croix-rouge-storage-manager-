@@ -1,0 +1,1 @@
+export const DEFAULT_ADMIN_EMAIL = 'ifzas93230@gmail.com';

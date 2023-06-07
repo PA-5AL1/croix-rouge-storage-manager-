@@ -1,0 +1,14 @@
+npm-debug.log*
+node_modules
+dist
+build
+coverage
+dist-ssr
+*.local
+
+.vscode/*
+.DS_Store
+
+*.env
+# Local Netlify folder
+.netlify
