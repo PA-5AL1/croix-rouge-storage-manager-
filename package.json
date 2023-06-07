@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@netlify/functions": "^1.6.0",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.1.4"
   }
 }

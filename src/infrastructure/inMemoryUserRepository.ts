@@ -1,12 +1,11 @@
-import Users from "../domain/Users";
-import User from "../domain/user";
+import Users from "../domain/user/users";
+import User from "../domain/user/user";
 
 export default class InMemoryUserRepository implements Users {
     private users: Map<string, User> = new Map<string, User>();
 
     save(user: User): Promise<User> {
         this.users.set(user.email, user);
-
         return new Promise<User>((resolve, reject) => {
             setTimeout( () => {
                 resolve(user);

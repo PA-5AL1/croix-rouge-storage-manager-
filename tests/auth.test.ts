@@ -1,7 +1,7 @@
-import Users from "../src/domain/Users";
+import Users from "../src/domain/user/users";
 import Authentication from "../src/domain/auth";
-import CryptPassword from "../src/domain/hashPassword";
-import User from "../src/domain/user";
+import CryptPassword from "../src/domain/user/hashPassword";
+import User from "../src/domain/user/user";
 import BCryptEncryption from "../src/infrastructure/bCryptEncryption";
 import { DEFAULT_ADMIN_EMAIL } from "../src/infrastructure/constant";
 import InMemoryUserRepository from "../src/infrastructure/inMemoryUserRepository";
@@ -10,51 +10,64 @@ const encryptPassword: CryptPassword = new BCryptEncryption();
 const userRepository: Users = new InMemoryUserRepository();
 const authenticationService: Authentication = new Authentication(encryptPassword, userRepository);
 
-let registeredUser: User;
-const newUser = User.new("nguyen.ifzas@gmail.com", "password");
-
-describe('User should be able to register', () => {
+describe('User register', () => {
+    let registeredUser: User;
+    const newUser = User.new("nguyen.ifzas@gmail.com", "password");
     beforeAll(async() => {
         registeredUser = await authenticationService.register(newUser.email, newUser.password);
     });
 
-   
-    it('User password should be hashed', async () => {
-        const hashPassword = await encryptPassword.hash("password");
+    it('Should hash the new user password', async () => {
+        const hashPassword = await encryptPassword.hash(newUser.password);
         expect(newUser.password).not.toEqual(hashPassword);
     });
 
-    it('User password and hashed password should be the same', async () => {
-        const comparePassword = await encryptPassword.compare("password", registeredUser.password);
+    it('Should match new user plain and hashed password', async () => {
+        const comparePassword = await encryptPassword.compare(newUser.password, registeredUser.password);
         expect(comparePassword).toBe(true);
     });
 
-    it('User should be registered', async () => {
-        expect(registeredUser.email).toEqual("nguyen.ifzas@gmail.com");
+    it('Should register the user', async () => {
+        expect(registeredUser.email).toEqual(newUser.email);
     });
 
-    it('Admin should be notified of a new registration', async () => {
+    it('Should notify admin upon new user registration', async () => {
         // TODO: Mock email sender
         // `Sending email to ${DEFAULT_ADMIN_EMAIL}`
     });
-
-});
-
-describe('User should not be able to register twice', () => {
-
-    beforeAll(async() => {
-        registeredUser = await authenticationService.register(newUser.email, newUser.password);
-    });
-
     it('Should throw an error while trying to register twice', async () => {
         await expect(authenticationService.register(newUser.email, newUser.password))
         .rejects
         .toThrow(`User ${newUser.email} already exists`);
     });
 
-    it('Admin should be notified of a new registration', async () => {
-        // TODO: Mock email sender
-        // `Sending email to ${DEFAULT_ADMIN_EMAIL}`
+});
+
+
+describe('User login', () => {
+    let user: User;
+
+    beforeAll(async() => {
+        const hashPassword = await encryptPassword.hash('password');
+        user = User.new("nguyen.ifzas@gmail.com", hashPassword);
+        userRepository.save(user);
     });
 
+    it('Should login the user and send an access_token', async () => {
+        let accessToken: string = await authenticationService.login(user.email, 'password');
+        expect(accessToken).toBe(`access_token-${user.email}`);
+    });
+
+    it('Should throw an error if the user do not exist', async () => {
+        await expect(authenticationService.login('user.email', user.password))
+        .rejects
+        .toThrow(`User not found.`);
+    });
+
+    it('Should throw an error if the user password was wrong', async () => {
+        await expect(authenticationService.login(user.email, 'user.password'))
+        .rejects
+        .toThrow(`Invalid password.`);
+    });
 });
+

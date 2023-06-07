@@ -1,5 +1,6 @@
-import CryptPassword from "../domain/hashPassword";
-import bcrypt = require("bcrypt");
+import CryptPassword from "../domain/user/hashPassword";
+var bcrypt = require('bcryptjs');
+
 export default class BCryptEncryption implements CryptPassword {
     private saltRounds: number = 10;
     async hash(password: string): Promise<string> {

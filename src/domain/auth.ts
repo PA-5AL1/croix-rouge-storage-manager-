@@ -1,7 +1,7 @@
 import { DEFAULT_ADMIN_EMAIL } from "../infrastructure/constant";
-import Users from "./Users";
-import CryptPassword from "./hashPassword";
-import User from "./user";
+import Users from "./user/users";
+import CryptPassword from "./user/hashPassword";
+import User from "./user/user";
 
 export default class Authentication {
     private encryptPassword: CryptPassword;
@@ -24,6 +24,15 @@ export default class Authentication {
         this.notify(DEFAULT_ADMIN_EMAIL);
     
         return newUser;
+    }
+
+    public login = async (email: string, password: string) : Promise<string> => {
+        const userExist = await this.userRepository.find(email);
+        if (!userExist) throw new Error('User not found.');
+        const checkPassword = await this.encryptPassword.compare(password, userExist.password);
+        if (!checkPassword) throw new Error('Invalid password.');
+
+        return `access_token-${email}`;
     }
 
     private notify = (to: string) => {
