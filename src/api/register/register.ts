@@ -1,7 +1,10 @@
 import { Handler, HandlerContext, HandlerEvent } from '@netlify/functions'
 import CryptPassword from '../../domain/hashPassword';
 import BCryptEncryption from '../../infrastructure/bCryptEncryption';
-import { register } from '../../domain/auth';
+import Users from '../../domain/Users';
+import Authentication from '../../domain/auth';
+import InMemoryUserRepository from '../../infrastructure/inMemoryUserRepository';
+
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   console.log(event.body);
@@ -17,7 +20,10 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
   const body = JSON.parse(event.body);
 
   const encryptPassword: CryptPassword = new BCryptEncryption();
-  const registeredUser = await register(encryptPassword, body.email, body.password);
+const userRepository: Users = new InMemoryUserRepository();
+const authenticationService: Authentication = new Authentication(encryptPassword, userRepository);
+
+  const registeredUser = await authenticationService.register(body.email, body.password);
 
   return {
     statusCode: 200,
