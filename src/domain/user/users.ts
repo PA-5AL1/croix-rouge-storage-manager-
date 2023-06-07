@@ -1,6 +1,6 @@
-import User from "./user";
+import { User } from "./user";
 
-export default interface Users {
-    save(user: User): Promise<User>;
+export type Users = {
+    save(user: User): Promise<void>;
     find(email: string): Promise<User | undefined>;
 }

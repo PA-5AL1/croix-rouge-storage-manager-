@@ -1,23 +1,14 @@
-import Users from "../domain/user/users";
-import User from "../domain/user/user";
+import { User } from "../domain/user/user";
+import { Users } from "../domain/user/users";
 
-export default class InMemoryUserRepository implements Users {
-    private users: Map<string, User> = new Map<string, User>();
+let users: Map<string, User> = new Map<string, User>();
 
-    save(user: User): Promise<User> {
-        this.users.set(user.email, user);
-        return new Promise<User>((resolve, reject) => {
-            setTimeout( () => {
-                resolve(user);
-            }, 500);
-        });
+export const InMemoryUserRepository: Users = {
+    async find(email: string): Promise<User | undefined> {
+        return users.get(email);
+    },
+
+    async save(user: User): Promise<void> {
+        users.set(user.email, user)
     }
-    find(email: string): Promise<User | undefined> {
-        return new Promise<User | undefined>((resolve, reject) => {
-            setTimeout( () => {
-                resolve(this.users.get(email));
-            }, 500);
-        });
-    }
-    
-}
+};

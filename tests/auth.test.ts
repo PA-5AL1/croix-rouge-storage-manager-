@@ -1,16 +1,18 @@
-import Users from "../src/domain/user/users";
-import Authentication from "../src/domain/auth";
-import CryptPassword from "../src/domain/user/hashPassword";
-import User from "../src/domain/user/user";
-import BCryptEncryption from "../src/infrastructure/bCryptEncryption";
+
+import { registerUser } from "../src/application/registerUser";
+import { BCryptEncryption } from "../src/infrastructure/bCryptEncryption";
 import { DEFAULT_ADMIN_EMAIL } from "../src/infrastructure/constant";
-import InMemoryUserRepository from "../src/infrastructure/inMemoryUserRepository";
+import { InMemoryUserRepository } from "../src/infrastructure/inMemoryUserRepository";
 
-const encryptPassword: CryptPassword = new BCryptEncryption();
-const userRepository: Users = new InMemoryUserRepository();
-const authenticationService: Authentication = new Authentication(encryptPassword, userRepository);
-
+const register = registerUser(InMemoryUserRepository, BCryptEncryption);
+const newUser : RegisterUserDto = {
+  email: "nguyen.ifzas@gmail.com",
+  password: "password",
+}
 describe('User register', () => {
+
+    const register = registerUser(InMemoryUserRepository, BCryptEncryption);
+
     let registeredUser: User;
     const newUser = User.new("nguyen.ifzas@gmail.com", "password");
     beforeAll(async() => {
@@ -28,7 +30,8 @@ describe('User register', () => {
     });
 
     it('Should register the user', async () => {
-        expect(registeredUser.email).toEqual(newUser.email);
+        const user = await users.find(registeredUser.email);
+        expect(user?.email).toEqual(registeredUser.email);
     });
 
     it('Should notify admin upon new user registration', async () => {
@@ -49,7 +52,7 @@ describe('User login', () => {
     beforeAll(async() => {
         const hashPassword = await encryptPassword.hash('password');
         user = User.new("nguyen.ifzas@gmail.com", hashPassword);
-        userRepository.save(user);
+        users.save(user);
     });
 
     it('Should login the user and send an access_token', async () => {
